@@ -79,19 +79,23 @@ def home():
     return render_template('index2.html')  # Ensure this points to your actual frontend HTML file
 
 # API endpoint for processing stuttered speech and correcting it
-@app.route('/process', methods=['POST'])
+@app.route('/api/process', methods=['POST'])
 def process_text():
-    data = request.json
-    if not data or 'text' not in data:
-        return jsonify({'error': 'No text provided'}), 400
-    
-    structured_text = data['text']
     try:
+        data = request.json
+        if not data or 'text' not in data:
+            return jsonify({'error': 'No text provided'}), 400
+
+        structured_text = data['text']
         # Process the input text to correct stuttered speech and clean it
         normal_text = convert_structured_to_normal_text(structured_text)
-        return jsonify({'normal_text': normal_text})
+        return jsonify({'normal_text': normal_text}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+# Export the app for serverless deployment (e.g., Vercel)
+def handler(request, *args, **kwargs):
+    return app(request.environ, start_response=lambda status, headers: None)
 
 if __name__ == '__main__':
     app.run(debug=True)
